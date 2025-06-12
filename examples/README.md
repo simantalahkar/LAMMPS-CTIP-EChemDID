@@ -1,0 +1,1 @@
+This is the folder containing example scripts for the LAMMPS packages
