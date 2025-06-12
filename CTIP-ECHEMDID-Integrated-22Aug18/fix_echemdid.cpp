@@ -119,6 +119,8 @@ void FixEChemDID::init()
   for (int i = 0; i < modify->nfix; i++) {
     if (strstr(modify->fix[i]->style,"qeq/shielded")) {
       flagqeq = 1;
+	} else if (strstr(modify->fix[i]->style,"qeq/ctip")) {
+      flagqeq = 1;													  
     }
   }
   if (flagqeq != 1){
