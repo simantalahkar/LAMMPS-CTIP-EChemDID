@@ -15,10 +15,10 @@
    Contributing author: Ray Shan (Sandia)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "pair_coul_ctip.h"
 #include "atom.h"
 #include "comm.h"
@@ -194,7 +194,7 @@ void PairCoulCtip::coeff(int narg, char **arg)
   for (int i = 1; i <= n; i++)
     for (int j = i; j <= n; j++)
       if (map[i] >= 0 && map[j] >= 0) {
-	scale[i][j] = 1.0;
+		scale[i][j] = 1.0;
         setflag[i][j] = 1;
         count++;
       }
