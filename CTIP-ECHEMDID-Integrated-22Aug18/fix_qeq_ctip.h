@@ -39,7 +39,7 @@ class FixQEqCtip : public FixQEq {
   void conjugate_gradient();
   double brent_solver(double *);
   double calculate_qf(double,double *);
-  double dUdq_self(double,int);
+  double dUdq_self(double,int,int);
   double dUdq_two_body(int,int,double);
   double dUdq_two_body_ewald(double,double,double,double,double);
   double dUdq_two_body_wolf(double,double,double,double,double);
@@ -47,6 +47,8 @@ class FixQEqCtip : public FixQEq {
   double *qmin, *qmax;  // extract from pair_coul_ctip
   double ctip_omega, wolfewald, cut_coul; // extract from pair_coul_ctip
   int kspacetype; // extract from pair_coul_ctip
+  
+  int get_names_ctip(char *,double *&); // EChemDID					   
 
   double brent_maxiter, brent_critical, brent_tolerance; // for brent solver
 
