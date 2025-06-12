@@ -15,10 +15,10 @@
    Contributing author: Ray Shan (Sandia)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "fix_qeq_ctip.h"
 #include "atom.h"
 #include "comm.h"
@@ -173,12 +173,12 @@ void FixQEqCtip::conjugate_gradient()
 
   for (iloop = 0; iloop < maxiter; iloop++) {
 
-    // calculate g = -dUdq
+    // calculate g = -dUdq -> Minor change for EChemDID
     for (ii = 0; ii < inum; ii++) {
         g[ii] = 0.0;
         i = ilist[ii];
         if (atom->mask[i] & groupbit)
-             g[ii] = -dUdq_self(atom->q[i],atom->type[i]);
+             g[ii] = -dUdq_self(atom->q[i],atom->type[i],i);
     }
     for (ii = 0; ii < inum; ii++) {
       i = ilist[ii];
@@ -240,8 +240,8 @@ void FixQEqCtip::conjugate_gradient()
 }
 
 /* ---------------------------------------------------------------------- */
-
-double FixQEqCtip::dUdq_self(double qi, int itype)
+// Minor change for EChemDID variables
+double FixQEqCtip::dUdq_self(double qi, int itype, int myatomid)
 {
 
 /*
@@ -251,20 +251,30 @@ double FixQEqCtip::dUdq_self(double qi, int itype)
   correction terms keep charges in bound
 */
 
+
+
+ int flag_echemdid; // EChemDID
+ double *locpot; // EChemDID
+ char tmp1[] = "locpot"; // EChemDID
+ flag_echemdid = get_names_ctip(tmp1,locpot); // EChemDID
+  
+  
  double correction = 0.0;
  if (qi < qmin[itype]) 
     correction = 4.0*ctip_omega * (qi-qmin[itype]);
  else if (qi > qmax[itype]) 
     correction = 4.0*ctip_omega * (qi-qmax[itype]);
 
+// Modified for EChemDID
  double qqrd2e = force->qqrd2e;
  if (kspacetype == 1) { // wolf
    double woself = 0.50*erfc(wolfewald*cut_coul)/cut_coul + wolfewald/MY_PIS; // kc constant not yet multiplied.
-   return chi[itype] + qi*(eta[itype]-2*qqrd2e*woself) + correction;
+   if (flag_echemdid == 1) return chi[itype] + locpot[myatomid] + qi*(eta[itype]-2*qqrd2e*woself) + correction;
+   else return chi[itype] + qi*(eta[itype]-2*qqrd2e*woself) + correction;
   }
  if (kspacetype == 2) // ewald
-   return chi[itype] + qi*(eta[itype]-2*qqrd2e*wolfewald/MY_PIS) + correction;
-
+   if (flag_echemdid == 1) return chi[itype] + locpot[myatomid] + qi*(eta[itype]-2*qqrd2e*wolfewald/MY_PIS) + correction;
+   else return chi[itype] + qi*(eta[itype]-2*qqrd2e*wolfewald/MY_PIS) + correction;
   return 0.0;
 }
 
@@ -363,6 +373,7 @@ double FixQEqCtip::calculate_qf(double c, double *p)
  int ii, jj, i, j;
  double g[inum];
 
+// Minor changes for EChemDID
  for (ii = 0; ii < inum; ii++) {
      i = ilist[ii];
      if (atom->mask[i] & groupbit)
@@ -374,7 +385,7 @@ double FixQEqCtip::calculate_qf(double c, double *p)
      g[ii] = 0.0;
      i = ilist[ii];
      if (atom->mask[i] & groupbit)
-         g[ii] = -dUdq_self(qf[ii],atom->type[i]);
+         g[ii] = -dUdq_self(qf[ii],atom->type[i],i);
  }
  for (ii = 0; ii < inum; ii++) {
    i = ilist[ii];
@@ -538,3 +549,19 @@ void FixQEqCtip::pre_force(int vflag)
   if (force->kspace) force->kspace->qsum_qsq();
 }
 
+/* ---------------------------------------------------------------------- */
+
+// EChemDID
+
+int FixQEqCtip::get_names_ctip(char *c,double *&ptr)  // EChemDID
+{
+ int index,flag;
+ int flag_echemdid = 1;
+ index = atom->find_custom(c,flag);
+
+ if(index!=-1) ptr = atom->dvector[index];
+ else flag_echemdid = 0; 
+ return flag_echemdid;
+}
+
+/* ---------------------------------------------------------------------- */
