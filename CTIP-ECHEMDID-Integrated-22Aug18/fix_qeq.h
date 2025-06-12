@@ -49,7 +49,6 @@ class FixQEq : public Fix {
   int pack_exchange(int, double *);
   int unpack_exchange(int, double *);
   double memory_usage();
-  int get_names(char *,double *&); // EChemDID
 
  protected:
   int nevery;
