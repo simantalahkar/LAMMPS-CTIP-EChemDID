@@ -311,15 +311,10 @@ void FixQEq::init_storage()
 {
   nlocal = atom->nlocal;
   nall = atom->nlocal + atom->nghost;
-  double *locpot; // EChemDID
-  char tmp1[] = "locpot"; // EChemDID
-  int flag_echemdid; // EChemDID
-  flag_echemdid = get_names(tmp1,locpot); // EChemDID
 
   for( int i = 0; i < nall; i++ ) {
     Hdia_inv[i] = 1. / eta[atom->type[i]];
-    if (flag_echemdid == 1) b_s[i] = -chi[atom->type[i]] - locpot[i]; // EChemDID
-    else b_s[i] = -chi[atom->type[i]]; // EChemDID
+    b_s[i] = -chi[atom->type[i]];
     b_t[i] = -1.0;
     s[i] = t[i] = atom->q[i];
 
@@ -782,18 +777,3 @@ void FixQEq::read_file(char *file)
   delete [] words;
   delete [] setflag;
 }
-
-/* ---------------------------------------------------------------------- */
-
-int FixQEq::get_names(char *c,double *&ptr)  // EChemDID
-{
- int index,flag;
- int flag_echemdid = 1;
- index = atom->find_custom(c,flag);
-
- if(index!=-1) ptr = atom->dvector[index];
- else flag_echemdid = 0; 
- return flag_echemdid;
-}
-
-/* ---------------------------------------------------------------------- */
