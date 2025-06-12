@@ -12,8 +12,16 @@
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
+   This file is part of a modified integration of CTIP and EChemDID for use with LAMMPS.
+   Modifications made to enable compatibility with newer LAMMPS versions and package integration.
+------------------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------------
    Contributing author: Nicolas Onofrio, The Hong Kong PolyU 
    (nicolas.onofrio@polyu.edu.hk)
+   
+   Modifications and integration with CTIP made by:
+   Simanta Lahkar, Eindhoven University of Technology, 2025 (s.lahkar@tue.nl)
 ------------------------------------------------------------------------- */
 
 #include "stdio.h"
@@ -63,6 +71,12 @@ static const char cite_fix_echemdid[] =
   " pages={054109},\n"
   " year={2015},\n"
   " publisher={AIP Publishing}\n"
+  "}\n\n"
+  "@article{lahkar2025decoupling,\n"
+  " title={Decoupling Local Electrostatic Potential and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations},\n"
+  " author={Lahkar, Simanta and Bragaglia, Valeria and Bagheri, Behnaz and Falcone, Donato Francesco and Galetta, Matteo and Sousa, Marilyne and Todri-Sanial, Aida},\n"
+  " journal={arXiv preprint arXiv:2505.24468},\n"
+  " year={2025},\n"
   "}\n\n";
 
 /* ---------------------------------------------------------------------- */

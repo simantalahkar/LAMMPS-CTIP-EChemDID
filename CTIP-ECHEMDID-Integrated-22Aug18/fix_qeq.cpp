@@ -14,6 +14,9 @@
 /* ----------------------------------------------------------------------
    Contributing author: Ray Shan (Sandia)
      Based on fix qeq/reax by H. Metin Aktulga
+	 
+   Modifications and integration with CTIP made by:
+   Simanta Lahkar, Eindhoven University of Technology, 2025 (s.lahkar@tue.nl)
 ------------------------------------------------------------------------- */
 
 #include <cmath>

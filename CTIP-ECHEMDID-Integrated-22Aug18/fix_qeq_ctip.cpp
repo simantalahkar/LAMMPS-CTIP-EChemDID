@@ -12,7 +12,15 @@
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
-   Contributing author: Ray Shan (Sandia)
+   This file is part of a modified integration of CTIP and EChemDID for use with LAMMPS.
+   Modifications made to enable compatibility with newer LAMMPS versions and package integration.
+------------------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------------
+   Contributing authors: Ray Shan (Sandia)
+   
+   Modifications and integration with EChemDID made by:
+   Simanta Lahkar, Eindhoven University of Technology, 2025 (s.lahkar@tue.nl)
 ------------------------------------------------------------------------- */
 
 #include <cmath>
