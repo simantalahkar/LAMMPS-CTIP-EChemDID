@@ -8,7 +8,7 @@ The purpose of this integration is to enable combined simulations involving both
 
 ## What's Included
 
-- Combined and modified source files for both CTIP and EChemDID in the `CTIP-ECHEMDID-Integrated-22Aug18/` folder.
+- Modified source files for both CTIP and EChemDID in the `CTIP-ECHEMDID-Integrated-22Aug18/` folder.
 - Updated code for compatibility with modern LAMMPS builds.
 - Instructions for compilation and usage.
 
