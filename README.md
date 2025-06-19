@@ -1,27 +1,22 @@
 # LAMMPS-CTIP-EChemDID
 This repository contains an integrated and updated implementation of two LAMMPS packages:
 
-- **CTIP** (Charge-Transfer Ionic Potential)
-- **EChemDID** (Electrochemical Dynamics with Implicit Degrees of Freedom)
+- **CTIP** (Charge-Transfer Ionic Potential) - CTIP modifications to the Streitz-Mintmire potential and QEq-based charge equilibration.
+- **EChemDID** (Electrochemical Dynamics with Implicit Degrees of Freedom) - description of local electrochemical potentials and their equilibration through metallic atoms with fictitious dynamics.
 
-The purpose of this integration is to enable combined simulations involving both electrochemical potential equilibration and dynamic charge-transfer interactions in metallic and oxide materials. The packages have been adapted for compatibility with a newer version of LAMMPS and modified to work together.
-
-This integrated package is based on:
-- CTIP modifications to the Streitz-Mintmire potential and QEq-based charge equilibration.
-- EChemDID's description of local electrochemical potentials with fictitious dynamics.
+The purpose of this integration is to enable combined simulations involving both electrochemical potential equilibration and dynamic charge-transfer interactions in metal oxide materials. The packages have been adapted for compatibility with a newer version of LAMMPS and modified to work together.
 
 ## What's Included
 
 - Combined and modified source files for both CTIP and EChemDID in the `CTIP-ECHEMDID-Integrated-22Aug18/` folder.
 - Updated code for compatibility with modern LAMMPS builds.
-- Citation prompt for integrated package use.
 - Instructions for compilation and usage.
 
 ## Author of Integration
 
 **Simanta Lahkar**, 2025  
 Eindhoven University of Technology
-Contact: s.lahkar@tue.nl
+Contact: s.lahkar@tue.nl, simantalahkar@hotmail.com 
 
 ## Citing This Work
 
