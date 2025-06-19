@@ -2,8 +2,8 @@ This software is distributed under the terms of the GNU General Public License (
 either version 2 or 3, depending on the original package source.
 
 Original code from:
-- CTIP: © 2024 Nicolas Onofrio
-- EChemDID: © 2024 Kiran Sasikumar
+- CTIP: © 2024 Kiran Sasikumar (original repo: https://gitlab.com/lammps-extensions/ctip)
+- EChemDID: Based on work licensed under GPL-3.0 (original repo: https://github.com/nonofrio/LAMMPS-hacks-public/tree/master/ECHEMDID-22Aug18)
 
 Modifications and integration by:
 - © 2025 Simanta Lahkar
