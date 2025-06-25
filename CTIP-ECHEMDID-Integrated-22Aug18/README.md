@@ -30,10 +30,11 @@ This integration allows both models to be used concurrently in LAMMPS simulation
    make -j4
    ```
 
-2. Copy the files from this folder into the `src/` directory of LAMMPS:
+2. Copy the files from the CTIP and EChemDID folders into the `src/` directory of LAMMPS:
 
    ```bash
-   cp -r CTIP-EChemDID-Integrated-22Aug18/* /$user-directory-path/lammps/src/
+   cp -r CTIP-EChemDID-Integrated-22Aug18/CTIP/* /$user-directory-path/lammps/src/
+   cp -r CTIP-EChemDID-Integrated-22Aug18/EChemDID/* /$user-directory-path/lammps/src/
    ```
 
 3. Build LAMMPS as usual.
