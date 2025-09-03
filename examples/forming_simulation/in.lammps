@@ -1,0 +1,1212 @@
+########
+##  This is the input script for the MD simulation in LAMMPS v August 2018
+########
+
+# Initializing simulation
+#--------------------------------------------
+units           metal
+atom_style      charge
+atom_modify map array
+dimension       3
+boundary        p p f  
+processors 		* * 1 grid numa  
+
+neighbor 0.5 bin 
+neigh_modify delay 1 check yes 
+comm_modify cutoff 2.7
+
+# Defining the simulation parameters
+#-----------------------------------
+
+variable dt equal "0.0005"
+variable Tdamp equal "100*v_dt"
+variable vtau equal "0.1"
+
+variable vbias_step1 equal "-0.1"		  # Stepped initial increase in forming bias
+variable vbias_main equal "-1"	# Main forming bias
+variable vbias_read equal "-0.01"	
+variable vbias_read_reset equal "-0.01"	
+variable vbias_read_set equal "0.01"	
+variable vbias_set equal "0.1"
+variable vbias_reset equal "-0.1"
+
+
+#variable Nheat equal "100/v_dt" 
+variable Npropagate equal "0.5/v_dt" #for potential chemdid propagation (no MD)
+variable didnelec equal "10"			#fictitious potential diffusion steps per md step
+variable didk equal "6000"		# 8 A2/fs = 8000 A2/ps (metal units vs real units)
+
+variable Nfreq0_5 equal "0.5/v_dt"		  #output frequency
+variable Nfreq2 equal "2/v_dt"	
+
+variable Nfinal_update equal "500/v_dt"	  #final cumulative/average output frequency
+
+
+###################
+## defining simulation steps
+###################
+
+variable run_steps_step1 equal "50/v_dt"
+
+variable Nupdate_thermo_step1 equal "50/v_dt"		# frequency for atom assignment update in thermal bath groups - this has to be changed if T profile doesn't stabilize
+variable Nupdate_cf_step1 equal "2/v_dt"
+variable Nupdate_cf_step1md equal "v_Nupdate_cf_step1 - v_Npropagate"
+
+variable Nave equal "1/v_dt"	
+variable Nrepeat equal "1"		## repeat this many times
+variable Nevery equal "0.5/v_dt"		## use values every this timestep
+
+variable timestep_step1_start equal "0"
+variable timestep_step1_end equal "v_run_steps_step1"
+
+###################
+
+variable run_steps_ramp equal "500/v_dt"
+
+variable Nupdate_thermo_ramp equal "2/v_dt"		# frequency for atom assignment update in groups - this has to be changed if T profile is not stable yet
+variable Nupdate_cf_ramp equal "2/v_dt"
+variable Nupdate_cf_rampmd equal "v_Nupdate_cf_ramp - v_Npropagate"
+
+variable timestep_ramp_start equal "v_timestep_step1_end"
+variable timestep_ramp_end equal "v_timestep_ramp_start + v_run_steps_ramp"
+
+###################
+
+variable run_steps_main equal "3000/v_dt"
+
+variable Nupdate_thermo_main equal "2/v_dt"		# frequency for atom assignment update in groups - this has to be changed if T profile is not stable yet
+variable Nupdate_cf_main equal "2/v_dt"
+variable Nupdate_cf_mainmd equal "v_Nupdate_cf_main - v_Npropagate"
+
+variable timestep_main_start equal "v_timestep_ramp_end"
+variable timestep_main_end equal "v_timestep_main_start + v_run_steps_main"
+
+###################
+
+variable run_steps_cool equal "100/v_dt"
+
+variable Nupdate_thermo_cool equal "2/v_dt"		# frequency for atom assignment update in groups - this has to be changed if T profile is not stable yet
+variable Nupdate_cf_cool equal "2/v_dt"
+variable Nupdate_cf_coolmd equal "v_Nupdate_cf_cool - v_Npropagate"
+
+variable timestep_cool_start equal "v_timestep_main_end"
+variable timestep_cool_end equal "v_timestep_cool_start + v_run_steps_cool"
+
+###################
+
+variable run_steps_set equal "1000/v_dt"
+
+variable Nupdate_thermo_set equal "1000/v_dt"		# frequency for atom assignment update in groups - this has to be changed if T profile is not stable yet
+variable Nupdate_cf_set equal "2/v_dt"
+variable Nupdate_cf_setmd equal "v_Nupdate_cf_set - v_Npropagate"
+
+###################
+
+variable run_steps_reset equal "1000/v_dt"
+
+variable Nupdate_thermo_reset equal "1000/v_dt"		# frequency for atom assignment update in groups - this has to be changed if T profile is not stable yet
+variable Nupdate_cf_reset equal "2/v_dt"
+variable Nupdate_cf_resetmd equal "v_Nupdate_cf_reset - v_Npropagate"
+
+###################
+
+variable run_steps_relax equal "500/v_dt"
+
+variable Nupdate_thermo_relax equal "500/v_dt"		# frequency for atom assignment update in groups - this has to be changed if T profile is not stable yet
+variable Nupdate_cf_relax equal "2/v_dt"
+variable Nupdate_cf_relaxmd equal "v_Nupdate_cf_relax - v_Npropagate"
+
+###################
+
+variable run_steps_read equal "500/v_dt"
+
+variable Nupdate_thermo_read equal "500/v_dt"		# frequency for atom assignment update in groups - this has to be changed if T profile is not stable yet
+variable Nupdate_cf_read equal "2/v_dt"
+variable Nupdate_cf_readmd equal "v_Nupdate_cf_read - v_Npropagate"
+
+###################
+## defining loop ranges for each simulation step
+###################
+
+variable Nloop_thermo_step1 equal "v_run_steps_step1/v_Nupdate_thermo_step1"
+variable Nloop_cf_step1 equal "v_Nupdate_thermo_step1/v_Nupdate_cf_step1"
+
+variable Nloop_thermo_ramp equal "v_run_steps_ramp/v_Nupdate_thermo_ramp"
+variable Nloop_cf_ramp equal "v_Nupdate_thermo_ramp/v_Nupdate_cf_ramp"
+
+variable Nloop_thermo_main equal "v_run_steps_main/v_Nupdate_thermo_main"
+variable Nloop_cf_main equal "v_Nupdate_thermo_main/v_Nupdate_cf_main"
+
+variable Nloop_thermo_cool equal "v_run_steps_cool/v_Nupdate_thermo_cool"
+variable Nloop_cf_cool equal "v_Nupdate_thermo_cool/v_Nupdate_cf_cool"
+
+variable Nloop_thermo_relax equal "v_run_steps_relax/v_Nupdate_thermo_relax"
+variable Nloop_cf_relax equal "v_Nupdate_thermo_relax/v_Nupdate_cf_relax"
+
+variable Nloop_thermo_set equal "v_run_steps_set/v_Nupdate_thermo_set"
+variable Nloop_cf_set equal "v_Nupdate_thermo_set/v_Nupdate_cf_set"
+
+variable Nloop_thermo_reset equal "v_run_steps_reset/v_Nupdate_thermo_reset"
+variable Nloop_cf_reset equal "v_Nupdate_thermo_reset/v_Nupdate_cf_reset"
+
+variable Nloop_thermo_read equal "v_run_steps_read/v_Nupdate_thermo_read"
+variable Nloop_cf_read equal "v_Nupdate_thermo_read/v_Nupdate_cf_read"
+
+###################
+## defining structure characterization variables
+###################
+
+variable  avecoordcutoff equal "6"
+variable  rcutoff_dielectric equal "2.7"
+variable  rcutoff_cmo equal "2.3"
+
+variable heatminz equal "5.0"     ## this is the hot channel zlimits, should leave room for 2A thick surrounding room temperature thermal bath
+variable heatmaxz equal "21.0"
+
+variable ztop_elec equal "28.0"
+variable ztop_elec_extended equal "v_ztop_elec - 2.0"							
+variable zcmo equal "v_ztop_elec_extended - 5.0"					
+variable zbottom_elec equal "-2.0"
+variable frozen_top equal "v_ztop_elec"		## fixed value considered for all layer compositions
+
+variable vtempbath_outer equal "300.0"
+variable vtempchannel equal "1300.0"
+
+variable T equal "300.0"
+
+## EchemDID settings initialization
+##-----------------------------------------------------
+
+# Initialize the property
+fix          locpot  all  property/atom d_locpot d_lap
+compute      locpot  all  property/atom d_locpot d_lap
+
+
+################
+# Defining the simulation box
+#----------------------------
+read_data   relaxed_centered.data  
+set group all image 0 0 0
+reset_timestep 0
+
+###################################################################
+
+## Defining atom type  
+##-------------------
+
+group        type1    type  1
+group        mobileHf    type  2
+group        type3    type  3
+group        type4    type  4
+group        type5    type  5
+group        type6    type  6
+group        type7    type  7
+group        type8    type  8
+group        type9    type  9
+group        type10    type  10
+
+group     Oatoms     union type1 type3 type5 type7 type9
+group     Taatoms     union type4 type6 type8 type10
+
+# ------------ frozen Regions ---------------------------
+region  endbottom  block EDGE EDGE EDGE EDGE EDGE 0
+region  endtop  block EDGE EDGE EDGE EDGE ${frozen_top} EDGE
+
+#group frozen_bottom union type5 type6
+group frozen_bottom region endbottom
+group frozen_top region endtop
+group frozen union frozen_top frozen_bottom
+group mobile subtract all frozen
+group        frozen_bottom    delete
+group        frozen_top    delete
+
+
+
+group mobileTa intersect mobile Taatoms
+group mobileO intersect mobile Oatoms
+
+group mobileM union mobileTa mobileHf
+group mobileHf delete
+group mobileTa delete
+
+group        type3    delete
+group        type4    delete
+group        type5    delete
+group        type6    delete
+group        type7    delete
+group        type8    delete
+group        type9    delete
+group        type10   delete
+
+# ------------ Boundary conditions for electrodes regions
+variable        vbottom_atom atom "(z < v_zbottom_elec) && (type == 5 || type == 6)"
+group           bottom_elec variable vbottom_atom
+variable        vtop_atom atom "z > v_ztop_elec"
+group           top_elec variable vtop_atom
+variable        vtop_atom_extended atom "(z > v_ztop_elec_extended) && (z <= v_ztop_elec)"
+group           top_elec_extended variable vtop_atom_extended
+
+variable        vbottom_atom_extended atom "(z >= v_zbottom_elec) && (z < 0.0) && (type == 5 || type == 6)"
+group           bottom_elec_extended variable vbottom_atom_extended
+
+variable        vTa_atom_cmo atom "(z > v_zcmo) && (z <= v_ztop_elec_extended) && (type == 8 || type == 4 || type == 10)"
+group           Ta_cmo variable vTa_atom_cmo
+variable        vO_atom_cmo atom "(z > v_zcmo) && (z <= v_ztop_elec_extended) && (type == 3 || type == 7 || type == 9)"
+group           O_cmo variable vO_atom_cmo
+
+########################### Re-setting atom types
+
+group Otop_elec_extended intersect top_elec_extended Oatoms
+group Tatop_elec_extended intersect top_elec_extended Taatoms
+set group Otop_elec_extended type 9
+set group Tatop_elec_extended type 10
+group        Otop_elec_extended    delete
+group        Tatop_elec_extended    delete
+
+
+set     group O_cmo type 7
+set     group Ta_cmo type 8
+group   O_cmo delete
+
+variable        vTa_atom_dielec atom "(z < v_zcmo) && (type == 8 || type == 4 || type == 10)"
+group           Ta_dielec variable vTa_atom_dielec
+variable        vO_atom_dielec atom "(z < v_zcmo) && (type == 3 || type == 7 || type == 9)"
+group           O_dielec variable vO_atom_dielec
+
+set     group Ta_dielec type 4
+set     group O_dielec type 3
+group   O_dielec delete
+
+
+
+#############
+# ------------ Thermal bath Regions variables ---------------------------
+#################
+variable 	vz1 equal "v_heatminz"
+variable 	vz2 equal "v_heatmaxz"
+variable 	vzup equal "v_vz2+3"
+variable 	vzdown equal "v_vz1-3"    # This leaves 2 A thick layer in dielectric to act as surrounding nominal thermal bath
+
+variable	vx1hi equal "(xhi/2) + 5"			# 1 nm thick hot channel
+variable	vx1lo equal "(xhi/2) - 5"
+variable	vy1hi equal "(yhi/2) + 5"
+variable	vy1lo equal "(yhi/2) - 5"
+
+variable	vx2hi equal "(xhi/2) + 8"			# 3 A gap between thermal bath and hot channel
+variable	vx2lo equal "(xhi/2) - 8"
+variable	vy2hi equal "(yhi/2) + 8"
+variable	vy2lo equal "(yhi/2) - 8"
+
+#################
+# ---------- Define Interatomic Potential --------------------- 
+#--------------------------------------------------------------
+pair_style      hybrid/overlay coul/ctip 12.0 20.0 ewald eam/alloy
+kspace_style    ewald 1e-6
+kspace_modify	slab 3.0
+
+pair_coeff      * * coul/ctip OHfTa.ctip O Hf O Ta O Ta O Ta O Ta
+pair_coeff      * * eam/alloy OHfTa-new.set O Hf O Ta O Ta O Ta O Ta
+
+fix             DYNCHARGE all qeq/ctip 10 12.0 1.0e-3 1000 coul/streitz
+
+
+################################## test run
+#thermo ${Nfreq}
+
+#group 		ghotchannel dynamic all var vhotchannel #every ${Nupdate_thermo1}							
+#group 		ghotup dynamic all var vhotup #every ${Nupdate_thermo1}
+#group 		ghotdown dynamic all var vhotdown #every ${Nupdate_thermo1}
+#group 		ghotlateral dynamic all var vhotlateral #every ${Nupdate_thermo1}
+
+#run 0
+
+#group 		ghotchannel static						
+#group 		ghotup static
+#group 		ghotdown static
+#group 		ghotlateral static
+
+#group		gbath_outer union ghotdown ghotup ghotlateral
+#group		gintermediate subtract all gbath frozen
+
+
+#set 		group gbath type 11
+#velocity     all create ${T} 9826628 rot yes mom yes dist gaussian
+#fix 1 all nve
+#run 1
+#write_data test.*.data nocoeff 
+#quit
+
+#group 		ghotchannel clear						
+#group 		ghotup clear
+#group 		ghotdown clear
+#group 		ghotlateral clear
+
+#group		gbath_outer delete
+#group		gintermediate delete
+
+
+## Defining computes and variables for post processing 
+##--------------------------------------------------------
+compute       ncoord       all    coord/atom cutoff ${rcutoff_dielectric}  1 3 5 7 2 4 6 8 9 10 *
+
+variable      Ocoord atom "c_ncoord[1] + c_ncoord[2] + c_ncoord[3] + c_ncoord[4] + c_ncoord[9]"
+variable      Tacoord atom "c_ncoord[6] + c_ncoord[7] + c_ncoord[8] + c_ncoord[10]"
+variable      Hfcoord atom "c_ncoord[5]"
+variable      Mcoord atom "c_ncoord[5] + c_ncoord[6] + c_ncoord[7] + c_ncoord[8] + c_ncoord[10]"
+
+compute       ncoord_cmo       all    coord/atom cutoff ${rcutoff_cmo}  1 3 5 7 9 *
+
+variable      Ocoord_cmo atom "c_ncoord_cmo[1] + c_ncoord_cmo[2] + c_ncoord_cmo[3] + c_ncoord_cmo[4] + c_ncoord_cmo[5]"
+
+compute       mobile_temp  mobile temp
+compute       mobile_press  all pressure mobile_temp
+# compute eng all pe/atom 
+# compute eatoms all reduce sum c_eng 
+# compute 	cke all ke/atom
+# variable 	vtemp2 atom 100000*c_cke/(1.5*8.61733)
+#fix			ftemp all ave/atom ${Nevery} ${Nrepeat} ${Nfreq} v_vtemp2
+#fix			ftemp all ave/atom 1 1 1 v_vtemp2
+
+
+## Defining the output format (ie. customize thermo_style)
+##--------------------------------------------------------
+
+thermo ${Nfreq2}
+thermo_style custom step temp etotal pe ke density press cpuremain #c_mobile_temp  
+thermo_modify lost warn
+
+variable vstep equal "step"
+variable vetotal equal "etotal"
+variable vpe equal "pe"
+variable vke equal "ke"
+variable vlx equal "lx"
+variable vly equal "ly"
+variable vlz equal "lz"
+#variable vpxx equal "pxx"
+#variable vpyy equal "pyy"
+#variable vpzz equal "pzz"
+variable vtemp equal "temp"
+#variable vpress equal "press"
+#variable vtemp_mobile equal "c_mobile_temp"
+#variable vpress_mobile equal "c_mobile_press"
+variable vcpuremain equal "cpuremain"
+variable vdensity equal "density"
+
+#######################################################################################
+#-----------
+# SIMULATION
+#-----------
+#######################################################################################
+
+timestep     ${dt}
+
+############################
+############### Heating & Bias
+
+velocity frozen set 0.0 0.0 0.0
+fix ffreeze frozen setforce 0.0 0.0 0.0
+
+fix zwalls all wall/reflect zlo EDGE zhi EDGE
+
+
+dump          drun   all custom ${Nfreq0_5} run.*.lammpstrj  id type q x y z &
+		ix iy iz vx vy vz v_Ocoord v_Mcoord v_Tacoord v_Hfcoord c_ncoord[11] c_ncoord_cmo[6] v_Ocoord_cmo &
+		c_locpot[1] c_locpot[2] #v_vtemp2  c_eng  fx fy fz 
+
+
+fix 	fprint all print ${Nfreq0_5} "${vstep} ${vtemp} &
+		${vetotal} ${vpe} ${vke} &
+		${vdensity}  ${vcpuremain}" append runthermo.dat 
+    #${vpress} ${vpxx} ${vtemp_mobile} ${vpress_mobile} ${vlx} ${vly} ${vlz} ${vpyy} ${vpzz}
+
+
+##---------------------------------------------------------------------------------------------------
+
+##---------------------------------------------------------------------------------------------------
+##############################					Forming - step1			####################################
+
+
+## Defining Filament group parameters 
+##--------------------------------------------------------	
+  variable   undercoord_atom    atom    "v_Ocoord < v_avecoordcutoff"
+  group      undercoord  dynamic  mobileM  var  undercoord_atom 
+  variable   undercoord_atom_cmo    atom    "v_Ocoord_cmo < v_avecoordcutoff"
+  group      undercoord_cmo  dynamic  Ta_cmo  var  undercoord_atom_cmo
+  run        0            #this is for identifying the undercoordinated atoms
+  group      undercoord  static
+  group      undercoord_cmo  static
+  group      propagatemetallic	union undercoord undercoord_cmo top_elec_extended bottom_elec_extended top_elec bottom_elec
+  
+  #variable   undercoord_atom delete
+  #variable   undercoord_atom_cmo delete
+
+
+variable n loop ${Nloop_thermo_step1}
+variable breakflagthermo_step1 equal 0
+label lloopthermo_step1
+
+## Defining Thermal bath group regions
+##--------------------------------------------------------
+
+variable	vhotchannel atom "(x >= v_vx1lo) && (x < v_vx1hi) && (y >= v_vy1lo) && (y < v_vy1hi) && (z >= v_vz1) && (z < v_vz2)"
+
+variable	vhotup atom "(z >= v_vzup) && (z < v_frozen_top)"
+variable	vhotdown atom "(z < v_vzdown) && (z >= 0)"
+variable	vhotlateral atom "((z >= v_vzdown) && (z < v_vzup) && ((((x >= v_vx2hi) && (x < xhi)) || ((x <= v_vx2lo) && (x > xlo))) || (((y >= v_vy2hi) && (y < yhi)) || ((y <= v_vy2lo) && (y > ylo)))))"
+
+group 		ghotchannel dynamic all var vhotchannel #every ${Nupdate_thermo1}							
+group 		ghotup dynamic all var vhotup #every ${Nupdate_thermo1}
+group 		ghotdown dynamic all var vhotdown #every ${Nupdate_thermo1}
+group 		ghotlateral dynamic all var vhotlateral #every ${Nupdate_thermo1}
+
+run 0
+
+group 		ghotchannel static						
+group 		ghotup static
+group 		ghotdown static
+group 		ghotlateral static
+
+group		gbath_outer union ghotdown ghotup ghotlateral
+group		gintermediate subtract all gbath_outer frozen ghotchannel
+
+fix     fbath_outer    gbath_outer   langevin ${T} ${T} ${vtau} 392856274 zero yes
+fix     fhotchannel    ghotchannel   langevin ${T} ${T} ${vtau} 581736517 zero yes
+
+# fix     fbath_outer    gbath_outer   langevin ${vtempbath_outer} ${T} ${vtau} 3928562 zero yes
+# fix     fhotchannel    ghotchannel   langevin ${vtempchannel} ${T} ${vtau} 581736517 zero yes
+
+###########################
+
+variable m loop ${Nloop_cf_step1}
+variable breakflagcf_step1 equal 0
+label lloopcf_step1
+
+## Defining Filament group parameters 
+##--------------------------------------------------------	
+
+fix			fOcoord all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_step1} v_Ocoord
+fix			fOcoord_cmo all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_step1} v_Ocoord_cmo
+
+# Initialize local electrochemical potential
+  set         type 1 d_locpot 0.0
+  set         type 2 d_locpot 0.0
+  set         type 3 d_locpot 0.0
+  set         type 4 d_locpot 0.0
+  set         type 5 d_locpot 0.0
+  set         type 6 d_locpot 0.0
+  set         type 7 d_locpot 0.0
+  set         type 8 d_locpot 0.0
+  set         type 9 d_locpot 0.0
+  set         type 10 d_locpot 0.0
+
+
+# Run echemdid to the propagate the portential
+
+  fix         fixechem   propagatemetallic  echemdid  1 k ${didk} rc 3.9 norm 0.5 nelec ${didnelec} top_elec bottom_elec volt ${vbias_step1}
+
+  run         ${Npropagate}    start ${timestep_step1_start} stop ${timestep_step1_end}
+  unfix       fixechem 
+  
+  #k: effective diffusivity
+  #rc:critical sepration distance below which two atoms are considered as part of the same metallic cluster
+  #norm: normalization factor (if 0 the code will compute the norm for you)
+  #nelec: number of electronic steps between ionic steps
+
+############### 
+
+fix		1 mobile nve
+run ${Nupdate_cf_step1md}     start ${timestep_step1_start} stop ${timestep_step1_end}
+
+#write_data 1.1nvt.*.data nocoeff
+  unfix		  1
+
+# Clean the undercoordinated Hf group to reasign in the next step
+  group        undercoord   clear
+  group        undercoord_cmo   clear
+  group        propagatemetallic   clear
+  run          0
+  
+
+  variable   aveundercoord_atom    atom    "f_fOcoord < v_avecoordcutoff"
+  variable   aveundercoord_atom_cmo    atom    "f_fOcoord_cmo < v_avecoordcutoff"
+  group      undercoord  dynamic  mobileM  var  aveundercoord_atom #every ${Nupdate_cf}
+  group      undercoord_cmo  dynamic  Ta_cmo  var  aveundercoord_atom_cmo
+
+  run        0            #this is for identifying the undercoordinated atoms
+
+  group      undercoord  static
+  group      undercoord_cmo  static
+  group      propagatemetallic	union undercoord undercoord_cmo top_elec_extended bottom_elec_extended top_elec bottom_elec
+  
+  variable 		aveundercoord_atom delete
+  variable 		aveundercoord_atom_cmo delete
+  unfix			fOcoord
+  unfix			fOcoord_cmo
+
+
+if	"${m} == ${Nloop_cf_step1}" then "variable	breakflagcf_step1 equal 1" "jump	SELF nextloopcf_step1" 		
+
+#print "n = ${n} m = ${m}"
+
+next	m
+jump 	SELF lloopcf_step1
+
+#################################### CF update loop 1
+
+label nextloopcf_step1
+if	"${breakflagcf_step1} == 1" then "variable	m delete" 
+
+  unfix       fbath_outer 
+  unfix       fhotchannel
+
+
+  group 		ghotchannel clear						
+  group 		ghotup clear
+  group 		ghotdown clear
+  group 		ghotlateral clear
+
+  group		gbath_outer delete
+  group		gintermediate delete
+
+  run 0
+
+
+if	"${n} == ${Nloop_thermo_step1}" then "variable	breakflagthermo_step1 equal 1" "jump	SELF nextloopthermo_step1" 		
+
+#print "n = ${n} m = ${m}"
+
+next	n
+jump 	SELF lloopthermo_step1
+
+#################################### Thermo update loop 1
+
+label nextloopthermo_step1
+if	"${breakflagthermo_step1} == 1" then "variable	n delete" 
+
+write_data step1.*.data nocoeff
+
+print "Out of loop 2 step1"
+
+
+
+###################################################	
+################################################  Ramp  ##########################################
+
+
+variable n loop ${Nloop_thermo_ramp}
+variable breakflagthermo_ramp equal 0
+label lloopthermo_ramp
+
+## Defining Thermal bath group regions
+##--------------------------------------------------------
+
+variable	vhotchannel atom "(x >= v_vx1lo) && (x < v_vx1hi) && (y >= v_vy1lo) && (y < v_vy1hi) && (z >= v_vz1) && (z < v_vz2)"
+
+variable	vhotup atom "(z >= v_vzup) && (z < v_frozen_top)"
+variable	vhotdown atom "(z < v_vzdown) && (z >= 0)"
+variable	vhotlateral atom "((z >= v_vzdown) && (z < v_vzup) && ((((x >= v_vx2hi) && (x < xhi)) || ((x <= v_vx2lo) && (x > xlo))) || (((y >= v_vy2hi) && (y < yhi)) || ((y <= v_vy2lo) && (y > ylo)))))"
+
+group 		ghotchannel dynamic all var vhotchannel #every ${Nupdate_thermo1}							
+group 		ghotup dynamic all var vhotup #every ${Nupdate_thermo1}
+group 		ghotdown dynamic all var vhotdown #every ${Nupdate_thermo1}
+group 		ghotlateral dynamic all var vhotlateral #every ${Nupdate_thermo1}
+
+run 0
+
+group 		ghotchannel static						
+group 		ghotup static
+group 		ghotdown static
+group 		ghotlateral static
+
+group		gbath_outer union ghotdown ghotup ghotlateral
+group		gintermediate subtract all gbath_outer frozen ghotchannel
+
+
+fix     fbath_outer    gbath_outer   langevin ${T} ${vtempchannel} ${vtau} 392856268 zero yes
+fix     fhotchannel    ghotchannel   langevin ${T} ${vtempchannel} ${vtau} 581736517 zero yes
+
+
+###########################
+
+variable m loop ${Nloop_cf_ramp}
+variable breakflagcf_ramp equal 0
+label lloopcf_ramp
+
+## Defining Filament group parameters 
+##--------------------------------------------------------	
+
+fix			fOcoord all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_ramp} v_Ocoord
+fix			fOcoord_cmo all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_ramp} v_Ocoord_cmo
+
+
+# Initialize local electrochemical potential
+  set         type 1 d_locpot 0.0
+  set         type 2 d_locpot 0.0
+  set         type 3 d_locpot 0.0
+  set         type 4 d_locpot 0.0
+  set         type 5 d_locpot 0.0
+  set         type 6 d_locpot 0.0
+  set         type 7 d_locpot 0.0
+  set         type 8 d_locpot 0.0
+  set         type 9 d_locpot 0.0
+  set         type 10 d_locpot 0.0
+
+
+# Run echemdid to the propagate the portential
+
+  fix         fixechem   propagatemetallic  echemdid  1 k ${didk} rc 3.9 norm 0.5 nelec ${didnelec} top_elec bottom_elec volt ${vbias_main}
+
+  run         ${Npropagate}    start ${timestep_ramp_start} stop ${timestep_ramp_end}
+  unfix       fixechem 
+  
+  #k: effective diffusivity
+  #rc:critical sepration distance below which two atoms are considered as part of the same metallic cluster
+  #norm: normalization factor (if 0 the code will compute the norm for you)
+  #nelec: number of electronic steps between ionic steps
+
+############### 
+
+fix		1 mobile nve
+run ${Nupdate_cf_rampmd}        start ${timestep_ramp_start} stop ${timestep_ramp_end}
+
+#write_data 1.1nvt.*.data nocoeff
+  unfix		  1
+
+# Clean the undercoordinated Hf group to reasign in the next step
+  group        undercoord   clear
+  group        undercoord_cmo   clear
+  group        propagatemetallic   clear
+  run          0
+  
+
+  variable   aveundercoord_atom    atom    "f_fOcoord < v_avecoordcutoff"
+  variable   aveundercoord_atom_cmo    atom    "f_fOcoord_cmo < v_avecoordcutoff"
+  group      undercoord  dynamic  mobileM  var  aveundercoord_atom #every ${Nupdate_cf}
+  group      undercoord_cmo  dynamic  Ta_cmo  var  aveundercoord_atom_cmo
+
+  run        0            #this is for identifying the undercoordinated atoms
+
+  group      undercoord  static
+  group      undercoord_cmo  static
+  group      propagatemetallic	union undercoord undercoord_cmo top_elec_extended bottom_elec_extended top_elec bottom_elec
+  
+  variable 		aveundercoord_atom delete
+  variable 		aveundercoord_atom_cmo delete
+  unfix			fOcoord
+  unfix			fOcoord_cmo
+
+
+if	"${m} == ${Nloop_cf_ramp}" then "variable	breakflagcf_ramp equal 1" "jump	SELF nextloopcf_ramp" 		
+
+#print "n = ${n} m = ${m}"
+
+next	m
+jump 	SELF lloopcf_ramp
+
+#################################### CF update loop 1
+
+label nextloopcf_ramp
+if	"${breakflagcf_ramp} == 1" then "variable	m delete" 
+
+  unfix       fbath_outer 
+  unfix       fhotchannel
+
+
+  group 		ghotchannel clear						
+  group 		ghotup clear
+  group 		ghotdown clear
+  group 		ghotlateral clear
+
+  group		gbath_outer delete
+  group		gintermediate delete
+
+  run 0
+
+
+if	"${n} == ${Nloop_thermo_ramp}" then "variable	breakflagthermo_ramp equal 1" "jump	SELF nextloopthermo_ramp" 		
+
+#print "n = ${n} m = ${m}"
+
+next	n
+jump 	SELF lloopthermo_ramp
+
+#################################### Thermo update loop 1
+
+label nextloopthermo_ramp
+if	"${breakflagthermo_ramp} == 1" then "variable	n delete" 
+
+
+write_data ramp.*.data nocoeff
+
+print "Out of loop 2 ramp"
+
+
+###################################################	
+################################################  Forming  ##########################################
+
+
+variable n loop ${Nloop_thermo_main}
+variable breakflagthermo_main equal 0
+label lloopthermo_main_forming
+
+## Defining Thermal bath group regions
+##--------------------------------------------------------
+
+variable	vhotchannel atom "(x >= v_vx1lo) && (x < v_vx1hi) && (y >= v_vy1lo) && (y < v_vy1hi) && (z >= v_vz1) && (z < v_vz2)"
+
+variable	vhotup atom "(z >= v_vzup) && (z < v_frozen_top)"
+variable	vhotdown atom "(z < v_vzdown) && (z >= 0)"
+variable	vhotlateral atom "((z >= v_vzdown) && (z < v_vzup) && ((((x >= v_vx2hi) && (x < xhi)) || ((x <= v_vx2lo) && (x > xlo))) || (((y >= v_vy2hi) && (y < yhi)) || ((y <= v_vy2lo) && (y > ylo)))))"
+
+group 		ghotchannel dynamic all var vhotchannel #every ${Nupdate_thermo1}							
+group 		ghotup dynamic all var vhotup #every ${Nupdate_thermo1}
+group 		ghotdown dynamic all var vhotdown #every ${Nupdate_thermo1}
+group 		ghotlateral dynamic all var vhotlateral #every ${Nupdate_thermo1}
+
+run 0
+
+group 		ghotchannel static						
+group 		ghotup static
+group 		ghotdown static
+group 		ghotlateral static
+
+group		gbath_outer union ghotdown ghotup ghotlateral
+group		gintermediate subtract all gbath_outer frozen ghotchannel
+
+
+fix     fbath_outer    gbath_outer   langevin ${vtempbath_outer} ${vtempbath_outer} ${vtau} 3928562 zero yes
+fix     fhotchannel    ghotchannel   langevin ${vtempchannel} ${vtempchannel} ${vtau} 581736517 zero yes
+
+
+###########################
+
+variable m loop ${Nloop_cf_main}
+variable breakflagcf_main equal 0
+label lloopcf_main_forming
+
+## Defining Filament group parameters 
+##--------------------------------------------------------	
+
+fix			fOcoord all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_main} v_Ocoord
+fix			fOcoord_cmo all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_main} v_Ocoord_cmo
+
+
+# Initialize local electrochemical potential
+  set         type 1 d_locpot 0.0
+  set         type 2 d_locpot 0.0
+  set         type 3 d_locpot 0.0
+  set         type 4 d_locpot 0.0
+  set         type 5 d_locpot 0.0
+  set         type 6 d_locpot 0.0
+  set         type 7 d_locpot 0.0
+  set         type 8 d_locpot 0.0
+  set         type 9 d_locpot 0.0
+  set         type 10 d_locpot 0.0
+
+
+# Run echemdid to the propagate the portential
+
+  fix         fixechem   propagatemetallic  echemdid  1 k ${didk} rc 3.9 norm 0.5 nelec ${didnelec} top_elec bottom_elec volt ${vbias_main}
+
+  run         ${Npropagate}
+  unfix       fixechem 
+  
+  #k: effective diffusivity
+  #rc:critical sepration distance below which two atoms are considered as part of the same metallic cluster
+  #norm: normalization factor (if 0 the code will compute the norm for you)
+  #nelec: number of electronic steps between ionic steps
+
+############### 
+
+fix		1 mobile nve
+run ${Nupdate_cf_mainmd}
+
+#write_data 1.1nvt.*.data nocoeff
+  unfix		  1
+
+# Clean the undercoordinated Hf group to reasign in the next step
+  group        undercoord   clear
+  group        undercoord_cmo   clear
+  group        propagatemetallic   clear
+  run          0
+  
+
+  variable   aveundercoord_atom    atom    "f_fOcoord < v_avecoordcutoff"
+  variable   aveundercoord_atom_cmo    atom    "f_fOcoord_cmo < v_avecoordcutoff"
+  group      undercoord  dynamic  mobileM  var  aveundercoord_atom #every ${Nupdate_cf}
+  group      undercoord_cmo  dynamic  Ta_cmo  var  aveundercoord_atom_cmo
+
+  run        0            #this is for identifying the undercoordinated atoms
+
+  group      undercoord  static
+  group      undercoord_cmo  static
+  group      propagatemetallic	union undercoord undercoord_cmo top_elec_extended bottom_elec_extended top_elec bottom_elec
+  
+  variable 		aveundercoord_atom delete
+  variable 		aveundercoord_atom_cmo delete
+  unfix			fOcoord
+  unfix			fOcoord_cmo
+
+
+if	"${m} == ${Nloop_cf_main}" then "variable	breakflagcf_main equal 1" "jump	SELF nextloopcf_main_forming" 		
+
+#print "n = ${n} m = ${m}"
+
+next	m
+jump 	SELF lloopcf_main_forming
+
+#################################### CF update loop 1
+
+label nextloopcf_main_forming
+if	"${breakflagcf_main} == 1" then "variable	m delete" 
+
+  unfix       fbath_outer 
+  unfix       fhotchannel
+
+
+  group 		ghotchannel clear						
+  group 		ghotup clear
+  group 		ghotdown clear
+  group 		ghotlateral clear
+
+  group		gbath_outer delete
+  group		gintermediate delete
+
+  run 0
+
+
+if	"${n} == ${Nloop_thermo_main}" then "variable	breakflagthermo_main equal 1" "jump	SELF nextloopthermo_main_forming" 		
+
+#print "n = ${n} m = ${m}"
+
+next	n
+jump 	SELF lloopthermo_main_forming
+
+#################################### Thermo update loop 1
+
+label nextloopthermo_main_forming
+if	"${breakflagthermo_main} == 1" then "variable	n delete" 
+
+
+write_data main.*.data nocoeff
+
+print "Out of loop 2 forming"
+
+###################################################	
+################################################  cool  ##########################################
+
+
+variable n loop ${Nloop_thermo_cool}
+variable breakflagthermo_cool equal 0
+label lloopthermo_cool_forming
+
+## Defining Thermal bath group regions
+##--------------------------------------------------------
+
+variable	vhotchannel atom "(x >= v_vx1lo) && (x < v_vx1hi) && (y >= v_vy1lo) && (y < v_vy1hi) && (z >= v_vz1) && (z < v_vz2)"
+
+variable	vhotup atom "(z >= v_vzup) && (z < v_frozen_top)"
+variable	vhotdown atom "(z < v_vzdown) && (z >= 0)"
+variable	vhotlateral atom "((z >= v_vzdown) && (z < v_vzup) && ((((x >= v_vx2hi) && (x < xhi)) || ((x <= v_vx2lo) && (x > xlo))) || (((y >= v_vy2hi) && (y < yhi)) || ((y <= v_vy2lo) && (y > ylo)))))"
+
+group 		ghotchannel dynamic all var vhotchannel #every ${Nupdate_thermo1}							
+group 		ghotup dynamic all var vhotup #every ${Nupdate_thermo1}
+group 		ghotdown dynamic all var vhotdown #every ${Nupdate_thermo1}
+group 		ghotlateral dynamic all var vhotlateral #every ${Nupdate_thermo1}
+
+run 0
+
+group 		ghotchannel static						
+group 		ghotup static
+group 		ghotdown static
+group 		ghotlateral static
+
+group		gbath_outer union ghotdown ghotup ghotlateral
+group		gintermediate subtract all gbath_outer frozen ghotchannel
+
+
+fix     fbath_outer    gbath_outer   langevin ${vtempbath_outer} ${T} ${vtau} 392856358 zero yes
+fix     fhotchannel    ghotchannel   langevin ${vtempchannel} ${T} ${vtau} 581736517 zero yes
+
+
+###########################
+
+variable m loop ${Nloop_cf_cool}
+variable breakflagcf_cool equal 0
+label lloopcf_cool_forming
+
+## Defining Filament group parameters 
+##--------------------------------------------------------	
+
+fix			fOcoord all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_cool} v_Ocoord
+fix			fOcoord_cmo all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_cool} v_Ocoord_cmo
+
+
+# Initialize local electrochemical potential
+  set         type 1 d_locpot 0.0
+  set         type 2 d_locpot 0.0
+  set         type 3 d_locpot 0.0
+  set         type 4 d_locpot 0.0
+  set         type 5 d_locpot 0.0
+  set         type 6 d_locpot 0.0
+  set         type 7 d_locpot 0.0
+  set         type 8 d_locpot 0.0
+  set         type 9 d_locpot 0.0
+  set         type 10 d_locpot 0.0
+
+
+# Run echemdid to the propagate the portential
+
+  fix         fixechem   propagatemetallic  echemdid  1 k ${didk} rc 3.9 norm 0.5 nelec ${didnelec} top_elec bottom_elec volt ${vbias_read}
+
+  run         ${Npropagate}         start ${timestep_cool_start} stop ${timestep_cool_end}
+  unfix       fixechem 
+  
+  #k: effective diffusivity
+  #rc:critical sepration distance below which two atoms are considered as part of the same metallic cluster
+  #norm: normalization factor (if 0 the code will compute the norm for you)
+  #nelec: number of electronic steps between ionic steps
+
+############### 
+
+fix		1 mobile nve
+run ${Nupdate_cf_coolmd}          start ${timestep_cool_start} stop ${timestep_cool_end}
+
+#write_data 1.1nvt.*.data nocoeff
+  unfix		  1
+
+# Clean the undercoordinated Hf group to reasign in the next step
+  group        undercoord   clear
+  group        undercoord_cmo   clear
+  group        propagatemetallic   clear
+  run          0
+  
+
+  variable   aveundercoord_atom    atom    "f_fOcoord < v_avecoordcutoff"
+  variable   aveundercoord_atom_cmo    atom    "f_fOcoord_cmo < v_avecoordcutoff"
+  group      undercoord  dynamic  mobileM  var  aveundercoord_atom #every ${Nupdate_cf}
+  group      undercoord_cmo  dynamic  Ta_cmo  var  aveundercoord_atom_cmo
+
+  run        0            #this is for identifying the undercoordinated atoms
+
+  group      undercoord  static
+  group      undercoord_cmo  static
+  group      propagatemetallic	union undercoord undercoord_cmo top_elec_extended bottom_elec_extended top_elec bottom_elec
+  
+  variable 		aveundercoord_atom delete
+  variable 		aveundercoord_atom_cmo delete
+  unfix			fOcoord
+  unfix			fOcoord_cmo
+
+
+if	"${m} == ${Nloop_cf_cool}" then "variable	breakflagcf_cool equal 1" "jump	SELF nextloopcf_cool_forming" 		
+
+#print "n = ${n} m = ${m}"
+
+next	m
+jump 	SELF lloopcf_cool_forming
+
+#################################### CF update loop 1
+
+label nextloopcf_cool_forming
+if	"${breakflagcf_cool} == 1" then "variable	m delete" 
+
+  unfix       fbath_outer 
+  unfix       fhotchannel
+
+
+  group 		ghotchannel clear						
+  group 		ghotup clear
+  group 		ghotdown clear
+  group 		ghotlateral clear
+
+  group		gbath_outer delete
+  group		gintermediate delete
+
+  run 0
+
+
+if	"${n} == ${Nloop_thermo_cool}" then "variable	breakflagthermo_cool equal 1" "jump	SELF nextloopthermo_cool_forming" 		
+
+#print "n = ${n} m = ${m}"
+
+next	n
+jump 	SELF lloopthermo_cool_forming
+
+#################################### Thermo update loop 1
+
+label nextloopthermo_cool_forming
+if	"${breakflagthermo_cool} == 1" then "variable	n delete" 
+
+
+write_data cool.*.data nocoeff
+
+print "Out of loop 2 cooling"
+
+
+###################################################	
+################################################  relax  ##########################################
+
+
+variable n loop ${Nloop_thermo_relax}
+variable breakflagthermo_relax equal 0
+label lloopthermo_relax_forming
+
+## Defining Thermal bath group regions
+##--------------------------------------------------------
+
+variable	vhotchannel atom "(x >= v_vx1lo) && (x < v_vx1hi) && (y >= v_vy1lo) && (y < v_vy1hi) && (z >= v_vz1) && (z < v_vz2)"
+
+variable	vhotup atom "(z >= v_vzup) && (z < v_frozen_top)"
+variable	vhotdown atom "(z < v_vzdown) && (z >= 0)"
+variable	vhotlateral atom "((z >= v_vzdown) && (z < v_vzup) && ((((x >= v_vx2hi) && (x < xhi)) || ((x <= v_vx2lo) && (x > xlo))) || (((y >= v_vy2hi) && (y < yhi)) || ((y <= v_vy2lo) && (y > ylo)))))"
+
+group 		ghotchannel dynamic all var vhotchannel #every ${Nupdate_thermo1}							
+group 		ghotup dynamic all var vhotup #every ${Nupdate_thermo1}
+group 		ghotdown dynamic all var vhotdown #every ${Nupdate_thermo1}
+group 		ghotlateral dynamic all var vhotlateral #every ${Nupdate_thermo1}
+
+run 0
+
+group 		ghotchannel static						
+group 		ghotup static
+group 		ghotdown static
+group 		ghotlateral static
+
+group		gbath_outer union ghotdown ghotup ghotlateral
+group		gintermediate subtract all gbath_outer frozen ghotchannel
+
+
+fix     fbath_outer    gbath_outer   langevin ${T} ${T} ${vtau} 69868418 zero yes
+fix     fhotchannel    ghotchannel   langevin ${T} ${T} ${vtau} 8168165 zero yes
+
+
+###########################
+
+variable m loop ${Nloop_cf_relax}
+variable breakflagcf_relax equal 0
+label lloopcf_relax_forming
+
+## Defining Filament group parameters 
+##--------------------------------------------------------	
+
+fix			fOcoord all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_relax} v_Ocoord
+fix			fOcoord_cmo all ave/atom ${Nevery} ${Nrepeat} ${Nupdate_cf_relax} v_Ocoord_cmo
+
+
+# Initialize local electrochemical potential
+  set         type 1 d_locpot 0.0
+  set         type 2 d_locpot 0.0
+  set         type 3 d_locpot 0.0
+  set         type 4 d_locpot 0.0
+  set         type 5 d_locpot 0.0
+  set         type 6 d_locpot 0.0
+  set         type 7 d_locpot 0.0
+  set         type 8 d_locpot 0.0
+  set         type 9 d_locpot 0.0
+  set         type 10 d_locpot 0.0
+
+
+# Run echemdid to the propagate the portential
+
+  fix         fixechem   propagatemetallic  echemdid  1 k ${didk} rc 3.9 norm 0.5 nelec ${didnelec} top_elec bottom_elec volt ${vbias_read}
+
+  run         ${Npropagate}    
+  unfix       fixechem 
+  
+  #k: effective diffusivity
+  #rc:critical sepration distance below which two atoms are considered as part of the same metallic cluster
+  #norm: normalization factor (if 0 the code will compute the norm for you)
+  #nelec: number of electronic steps between ionic steps
+
+############### 
+
+fix		1 mobile nve
+run ${Nupdate_cf_relaxmd}  
+
+#write_data 1.1nvt.*.data nocoeff
+  unfix		  1
+
+# Clean the undercoordinated Hf group to reasign in the next step
+  group        undercoord   clear
+  group        undercoord_cmo   clear
+  group        propagatemetallic   clear
+  run          0
+  
+
+  variable   aveundercoord_atom    atom    "f_fOcoord < v_avecoordcutoff"
+  variable   aveundercoord_atom_cmo    atom    "f_fOcoord_cmo < v_avecoordcutoff"
+  group      undercoord  dynamic  mobileM  var  aveundercoord_atom #every ${Nupdate_cf}
+  group      undercoord_cmo  dynamic  Ta_cmo  var  aveundercoord_atom_cmo
+
+  run        0            #this is for identifying the undercoordinated atoms
+
+  group      undercoord  static
+  group      undercoord_cmo  static
+  group      propagatemetallic	union undercoord undercoord_cmo top_elec_extended bottom_elec_extended top_elec bottom_elec
+  
+  variable 		aveundercoord_atom delete
+  variable 		aveundercoord_atom_cmo delete
+  unfix			fOcoord
+  unfix			fOcoord_cmo
+
+
+if	"${m} == ${Nloop_cf_relax}" then "variable	breakflagcf_relax equal 1" "jump	SELF nextloopcf_relax_forming" 		
+
+#print "n = ${n} m = ${m}"
+
+next	m
+jump 	SELF lloopcf_relax_forming
+
+#################################### CF update loop 1
+
+label nextloopcf_relax_forming
+if	"${breakflagcf_relax} == 1" then "variable	m delete" 
+
+  unfix       fbath_outer 
+  unfix       fhotchannel
+
+
+  group 		ghotchannel clear						
+  group 		ghotup clear
+  group 		ghotdown clear
+  group 		ghotlateral clear
+
+  group		gbath_outer delete
+  group		gintermediate delete
+
+  run 0
+
+
+if	"${n} == ${Nloop_thermo_relax}" then "variable	breakflagthermo_relax equal 1" "jump	SELF nextloopthermo_relax_forming" 		
+
+#print "n = ${n} m = ${m}"
+
+next	n
+jump 	SELF lloopthermo_relax_forming
+
+#################################### Thermo update loop 1
+
+label nextloopthermo_relax_forming
+if	"${breakflagthermo_relax} == 1" then "variable	n delete" 
+
+
+write_data relax.*.data nocoeff
+
+print "Out of loop 2 relax post forming"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

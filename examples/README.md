@@ -1,1 +1,1 @@
-This is the folder containing example scripts for the LAMMPS packages
+This is the folder containing example input scripts for simulations using the LAMMPS EChemDID-CTIP package and other supporting and analysis files
