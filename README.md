@@ -4,26 +4,33 @@ This repository contains an integrated and updated implementation of two LAMMPS 
 - **CTIP** (Charge-Transfer Ionic Potential) - CTIP modifications to the Streitz-Mintmire potential and QEq-based charge equilibration.
 - **EChemDID** (Electrochemical Dynamics with Implicit Degrees of Freedom) - description of local electrochemical potentials and their equilibration through metallic atoms with fictitious dynamics.
 
-The purpose of this integration is to enable combined simulations involving both electrochemical potential equilibration and dynamic charge-transfer interactions in metal oxide materials. The packages have been adapted for compatibility with a newer version of LAMMPS and modified to work together.
+The purpose of this integration is to enable combined simulations involving both electrochemical potential equilibration and dynamic charge-transfer interactions in metal oxide materials. The packages have been adapted to the LAMMPS 22 Aug 2018 stable release and modified to work together.
 
 ## What's Included
 
-- Modified source files for both CTIP and EChemDID in the `CTIP-ECHEMDID-Integrated-22Aug18/` folder.
-- Updated code for compatibility with modern LAMMPS builds.
-- Instructions for compilation and usage.
+- Modified source files for both CTIP and EChemDID in the `CTIP-ECHEMDID-Integrated-22Aug18/` folder, with build instructions in its [README](CTIP-ECHEMDID-Integrated-22Aug18/README.md).
+- Example inputs in `examples/`: a forming simulation of a TaOx/HfO2 device under applied bias, and the scripts used to generate the force-field coefficients.
+
+## Changes to the formulation
+
+Besides making the two packages run together (the CTIP charge equilibration uses the local potential from EChemDID), the integration changes the formulation in two ways:
+
+- the EChemDID diffusion equation has no relaxation term;
+- atoms outside the filaments and the electrodes have zero local potential.
+
+Both changes are described with the simulations in the preprint cited below.
 
 ## Author of Integration
 
-**Simanta Lahkar**, 2025  
-Eindhoven University of Technology
-Contact: s.lahkar@tue.nl, simantalahkar@hotmail.com 
+**Simanta Lahkar**, 2025, developed at Eindhoven University of Technology  
+Contact: simantalahkar@hotmail.com
 
 ## Citing This Work
 
 If you use this integrated package for simulation or publication, please cite the following:
 
 - **This Integration**:
-  - S. Lahkar et al., Decoupling Local Electrostatic Potential and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations, arXiv:2505.24468 or https://doi.org/10.48550/arXiv.2505.24468
+  - S. Lahkar et al., Decoupling Electric Field and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations, arXiv:2505.24468 (2025), https://doi.org/10.48550/arXiv.2505.24468
 
 - **CTIP**:
   - Chem. Mater. 2017, 29, 8, 3603–3614
@@ -38,7 +45,7 @@ If you use this integrated package for simulation or publication, please cite th
 For issues, suggestions, or collaboration requests, please contact:
 
 **Simanta Lahkar**  
-Email: s.lahkar@tue.nl, simantalahkar@hotmail.com 
+Email: simantalahkar@hotmail.com
 GitHub: https://github.com/simantalahkar
 
 ## License

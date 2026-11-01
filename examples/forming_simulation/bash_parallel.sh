@@ -3,7 +3,7 @@
 #SBATCH --nodes=6
 #SBATCH --ntasks-per-node=128
 #SBATCH --partition=rome
-#SBATCH --mail-user=s.lahkar@tue.nl
+#SBATCH --mail-user=your.email@example.org
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --time=72:00:00
  

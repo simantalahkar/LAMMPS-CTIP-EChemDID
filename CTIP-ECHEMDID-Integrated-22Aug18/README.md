@@ -13,6 +13,7 @@ This integration allows both models to be used concurrently in LAMMPS simulation
 
 - Updated CTIP for compatibility with the 2018 LAMMPS version.
 - Modified CTIP and EChemDID components to interoperate with each other: CTIP qeq uses the local potential from EChemDID to equilibrate the charges.
+- Changed the formulation: no relaxation term in the EChemDID diffusion equation, and zero local potential for atoms outside the filaments and the electrodes.
 
 ## Installation
 
@@ -33,8 +34,8 @@ This integration allows both models to be used concurrently in LAMMPS simulation
 2. Copy the files from the CTIP and EChemDID folders into the `src/` directory of LAMMPS:
 
    ```bash
-   cp -r CTIP-EChemDID-Integrated-22Aug18/CTIP/* /$user-directory-path/lammps/src/
-   cp -r CTIP-EChemDID-Integrated-22Aug18/EChemDID/* /$user-directory-path/lammps/src/
+   cp -r CTIP-ECHEMDID-Integrated-22Aug18/CTIP/* /path/to/lammps/src/
+   cp -r CTIP-ECHEMDID-Integrated-22Aug18/EChemDID/* /path/to/lammps/src/
    ```
 
 3. Build LAMMPS as usual.
@@ -48,7 +49,7 @@ During initialization of a LAMMPS run using this package, a message will be prin
 Please cite the following works if you use this code:
 
 - **This Integration**:
-  - S. Lahkar et al., Decoupling Local Electrostatic Potential and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations, arXiv:2505.24468 or https://doi.org/10.48550/arXiv.2505.24468
+  - S. Lahkar et al., Decoupling Electric Field and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations, arXiv:2505.24468 (2025), https://doi.org/10.48550/arXiv.2505.24468
 
 - **CTIP**:
   - Chem. Mater. 2017, 29, 8, 3603–3614
@@ -63,7 +64,7 @@ Please cite the following works if you use this code:
 For issues, suggestions, or collaboration requests, please contact:
 
 **Simanta Lahkar**  
-Email: s.lahkar@tue.nl, simantalahkar@hotmail.com 
+Email: simantalahkar@hotmail.com
 GitHub: https://github.com/simantalahkar
 
 ## License
