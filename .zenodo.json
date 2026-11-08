@@ -1,0 +1,51 @@
+{
+  "title": "LAMMPS-CTIP-EChemDID: integrated CTIP and EChemDID packages for LAMMPS",
+  "upload_type": "software",
+  "description": "<p>An integrated and updated implementation of two LAMMPS packages: CTIP (Charge-Transfer Ionic Potential) and EChemDID (Electrochemical Dynamics with Implicit Degrees of Freedom). The integration enables simulations that combine electrochemical potential equilibration with dynamic charge transfer in metal oxide materials. The packages are adapted to the LAMMPS 22 Aug 2018 stable release and extended to simulate filament forming in ReRAM devices (TaOx/HfO2) under applied bias.</p><p>The release contains the modified source files, example LAMMPS inputs for a forming simulation and the scripts used to generate the force-field coefficients. Original code is from CTIP (Kiran Sasikumar) and EChemDID (Onofrio and Strachan).</p>",
+  "creators": [
+    {
+      "name": "Lahkar, Simanta",
+      "affiliation": "Eindhoven University of Technology",
+      "orcid": "0000-0002-6687-5227"
+    }
+  ],
+  "license": "GPL-2.0-only",
+  "access_right": "open",
+  "keywords": [
+    "LAMMPS",
+    "molecular dynamics",
+    "charge transfer",
+    "electrochemistry",
+    "ReRAM",
+    "materials science",
+    "CTIP",
+    "EChemDID"
+  ],
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "10.48550/arXiv.2505.24468",
+      "scheme": "doi"
+    },
+    {
+      "relation": "isDerivedFrom",
+      "identifier": "10.1063/1.4927562",
+      "scheme": "doi"
+    },
+    {
+      "relation": "isDerivedFrom",
+      "identifier": "10.1038/NMAT4221",
+      "scheme": "doi"
+    },
+    {
+      "relation": "isDerivedFrom",
+      "identifier": "https://gitlab.com/lammps-extensions/ctip",
+      "scheme": "url"
+    },
+    {
+      "relation": "isCompatibleWith",
+      "identifier": "https://github.com/simantalahkar/lammpskit",
+      "scheme": "url"
+    }
+  ]
+}
