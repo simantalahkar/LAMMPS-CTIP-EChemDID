@@ -3,7 +3,7 @@ message: "If you use this software, please cite the paper below and the CTIP and
 title: "LAMMPS-CTIP-EChemDID: integrated CTIP and EChemDID packages for LAMMPS"
 abstract: "An integrated and updated implementation of the CTIP (Charge-Transfer Ionic Potential) and EChemDID (Electrochemical Dynamics with Implicit Degrees of Freedom) packages for the LAMMPS 22 Aug 2018 stable release, extended to simulate filament forming in ReRAM devices under applied bias."
 type: software
-version: 1.0.0
+version: 1.0.1
 date-released: 2026-11-08
 license: GPL-2.0-only
 repository-code: "https://github.com/simantalahkar/LAMMPS-CTIP-EChemDID"
