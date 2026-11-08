@@ -9,7 +9,7 @@
       "orcid": "0000-0002-6687-5227"
     }
   ],
-  "license": "GPL-2.0-only",
+  "license": "gpl-2.0-only",
   "access_right": "open",
   "keywords": [
     "LAMMPS",
@@ -43,7 +43,7 @@
       "scheme": "url"
     },
     {
-      "relation": "isCompatibleWith",
+      "relation": "references",
       "identifier": "https://github.com/simantalahkar/lammpskit",
       "scheme": "url"
     }
