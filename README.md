@@ -1,4 +1,7 @@
 # LAMMPS-CTIP-EChemDID
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24062958.svg)](https://doi.org/10.5281/zenodo.24062958)
+
 This repository contains an integrated and updated implementation of two LAMMPS packages:
 
 - **CTIP** (Charge-Transfer Ionic Potential) - CTIP modifications to the Streitz-Mintmire potential and QEq-based charge equilibration.
@@ -29,7 +32,9 @@ Contact: simantalahkar@hotmail.com
 
 If you use this integrated package for simulation or publication, please cite the following:
 
-- **This Integration**:
+- **This Integration** (software): S. Lahkar, LAMMPS-CTIP-EChemDID, Zenodo, https://doi.org/10.5281/zenodo.24062958. This DOI always resolves to the latest release. To cite a specific version, use its own DOI from the [Zenodo record](https://doi.org/10.5281/zenodo.24062958); v1.0.1 is https://doi.org/10.5281/zenodo.24062959.
+
+- **This Integration** (paper):
   - S. Lahkar et al., Decoupling Electric Field and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations, arXiv:2505.24468 (2025), https://doi.org/10.48550/arXiv.2505.24468
 
 - **CTIP**:
