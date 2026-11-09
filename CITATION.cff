@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the paper below and the CTIP and EChemDID papers listed in the README."
+message: "If you use this software, please cite it as below. If you use it in research, please also cite the paper listed under references and the CTIP and EChemDID papers listed in the README."
 title: "LAMMPS-CTIP-EChemDID: integrated CTIP and EChemDID packages for LAMMPS"
 abstract: "An integrated and updated implementation of the CTIP (Charge-Transfer Ionic Potential) and EChemDID (Electrochemical Dynamics with Implicit Degrees of Freedom) packages for the LAMMPS 22 Aug 2018 stable release, extended to simulate filament forming in ReRAM devices under applied bias."
 type: software
@@ -7,6 +7,14 @@ version: 1.0.1
 date-released: 2026-11-08
 license: GPL-2.0-only
 repository-code: "https://github.com/simantalahkar/LAMMPS-CTIP-EChemDID"
+doi: 10.5281/zenodo.24062958
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24062958
+    description: "Concept DOI: all versions of LAMMPS-CTIP-EChemDID on Zenodo"
+  - type: doi
+    value: 10.5281/zenodo.24062959
+    description: "Version DOI: LAMMPS-CTIP-EChemDID v1.0.1"
 keywords:
   - LAMMPS
   - molecular dynamics
@@ -19,12 +27,12 @@ authors:
     given-names: Simanta
     orcid: "https://orcid.org/0000-0002-6687-5227"
     affiliation: "Eindhoven University of Technology"
-preferred-citation:
-  type: article
-  title: "Decoupling Electric Field and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations"
-  authors:
-    - family-names: Lahkar
-      given-names: Simanta
-  year: 2025
-  doi: 10.48550/arXiv.2505.24468
-  journal: "arXiv preprint arXiv:2505.24468"
+references:
+  - type: article
+    title: "Decoupling Electric Field and Temperature-Driven Atomistic Forming Mechanisms in TaOx/HfO2-Based ReRAMs using Reactive Molecular Dynamics Simulations"
+    authors:
+      - family-names: Lahkar
+        given-names: Simanta
+    year: 2025
+    doi: 10.48550/arXiv.2505.24468
+    journal: "arXiv preprint arXiv:2505.24468"
